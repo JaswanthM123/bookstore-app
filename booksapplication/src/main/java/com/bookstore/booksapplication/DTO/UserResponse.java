@@ -5,10 +5,16 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.List;
+
 @Getter
 @Setter
-public class signuprequest {
+@AllArgsConstructor
+@NoArgsConstructor
+public class UserResponse {
+    private Long userid;
     private String username;
     private String email;
-    private String password;
+    private List<BookRequest> books;
+
 }

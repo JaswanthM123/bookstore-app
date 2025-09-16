@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 @Service
 public class BookServiceImpl implements BookService {
@@ -22,11 +23,13 @@ public class BookServiceImpl implements BookService {
     @Override
     public BookResponse addBook(BookRequest request) {
         if(bookRepository.findByTitle(request.getTitle()).isPresent()) {
-            throw new RuntimeException("Email already exists!");
+            throw new RuntimeException("Book already exists!");
         }
         Book book1 =new Book();
         book1.setTitle(request.getTitle());
         book1.setDescription(request.getDescription());
+        Author author=authorRepository.findById(request.getAuthorid()).orElseThrow(()-> new RuntimeException("Null value"));
+        book1.setAuthor(author);
         bookRepository.save(book1);
         return new BookResponse(book1.getBookid(), book1.getTitle(),book1.getDescription());
     }
