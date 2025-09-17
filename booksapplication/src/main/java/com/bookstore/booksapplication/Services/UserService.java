@@ -17,4 +17,7 @@ public interface UserService {
     void deleteUser(Long id);
     String AssignBook(Long id, List<Long> books);
     String AssignBookById(Long userid,Long bookid);
+    UserResponse getAssignedBooks(Long userid);
+    String UpdateAssignedBooksById(Long id,List<Long> books);
+    String DeleteAssignedUserBooksById(Long userid);
 }

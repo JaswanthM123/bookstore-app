@@ -1,5 +1,6 @@
 package com.bookstore.booksapplication.ServiceImplementaions;
 
+import com.bookstore.booksapplication.DTO.BookRequest;
 import com.bookstore.booksapplication.DTO.SignupResponse;
 import com.bookstore.booksapplication.DTO.SignupRequest;
 import com.bookstore.booksapplication.DTO.UserResponse;
@@ -11,7 +12,9 @@ import com.bookstore.booksapplication.Services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -87,5 +90,36 @@ public class UserServiceImpl implements UserService {
         return "Book Assigned to " +user1.getUserid()+" "+user1.getUsername()+ "successfully";
 
 
+    }
+
+    @Override
+    public UserResponse getAssignedBooks(Long userid) {
+        user user1=userRepository.findById(userid).orElseThrow(()-> new RuntimeException("User not found"));
+        System.out.println(user1);
+        return new UserResponse(user1.getUserid(),user1.getUsername(),user1.getEmail(),user1.getBooks().stream().map(book -> {
+            BookRequest dto = new BookRequest();
+            dto.setTitle(book.getTitle());
+            dto.setDescription(book.getDescription());
+            dto.setAuthorid(book.getAuthor().getAuthorid());
+            return dto;
+        }).toList());
+    }
+
+    @Override
+    public String UpdateAssignedBooksById(Long id, List<Long> books) {
+        user user1=userRepository.findById(id).orElseThrow(() -> new RuntimeException("User not found"));
+        List<Book> books1 = bookRepository.findAllById(books);
+        Set<Book> newBooksSet = new HashSet<>(books1);
+         user1.setBooks(newBooksSet);
+        userRepository.save(user1);
+        return "Update User " +user1.getUserid()+ "Books with new list successfully";
+    }
+
+    @Override
+    public String DeleteAssignedUserBooksById(Long userid) {
+        user user1=userRepository.findById(userid).orElseThrow(() -> new RuntimeException("User not found"));
+        user1.getBooks().clear();
+        userRepository.save(user1);
+        return "Deleted User Assigned Books";
     }
 }

@@ -1,7 +1,6 @@
 package com.bookstore.booksapplication.ServiceImplementaions;
 
-import com.bookstore.booksapplication.DTO.BookRequest;
-import com.bookstore.booksapplication.DTO.BookResponse;
+import com.bookstore.booksapplication.DTO.*;
 import com.bookstore.booksapplication.Models.Author;
 import com.bookstore.booksapplication.Models.Book;
 import com.bookstore.booksapplication.Repositories.AuthorRepository;
@@ -62,5 +61,26 @@ public class BookServiceImpl implements BookService {
             throw new RuntimeException("Book not found");
         }
         bookRepository.deleteById(id);
+    }
+
+    @Override
+    public BookUserResponse GetUsersById(Long bookid) {
+        Book book = bookRepository.findById(bookid)
+                .orElseThrow(() -> new RuntimeException("Book not found"));
+        System.out.println(book);
+        List<SignupResponse> userDtos = book.getUsers().stream()
+                .map(user -> new SignupResponse(
+                        user.getUserid(),
+                        user.getUsername(),
+                        user.getEmail()
+                ))
+                .toList();
+        return new BookUserResponse(
+                book.getBookid(),
+                book.getTitle(),
+                book.getDescription(),
+                book.getAuthor().getAuthorid(),
+                userDtos
+        );
     }
 }
