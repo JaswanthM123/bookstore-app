@@ -4,6 +4,8 @@ import com.shristi.bookstore.dtos.BookRequest;
 import com.shristi.bookstore.dtos.SignupResponse;
 import com.shristi.bookstore.dtos.SignupRequest;
 import com.shristi.bookstore.dtos.UserResponse;
+import com.shristi.bookstore.exceptions.InvalidRequestException;
+import com.shristi.bookstore.exceptions.ResourceNotFoundException;
 import com.shristi.bookstore.models.Book;
 import com.shristi.bookstore.models.User;
 import com.shristi.bookstore.repositories.IBookRepository;
@@ -28,7 +30,7 @@ public class UserServiceImpl implements IUserService {
     @Override
     public SignupResponse registerUser(SignupRequest signupRequest) {
         if(userRepository.findByEmail(signupRequest.getEmail()).isPresent()) {
-            throw new RuntimeException("Email already exists!");
+            throw new InvalidRequestException("User already exists: " + signupRequest.getEmail());
         }
         User user1 = new User();
         user1.setUserName(signupRequest.getUserName());
@@ -40,7 +42,7 @@ public class UserServiceImpl implements IUserService {
 
     @Override
     public SignupResponse getUserById(Long userId) {
-        User user1=userRepository.findById(userId) .orElseThrow(() -> new RuntimeException("User not found"));
+        User user1=userRepository.findById(userId) .orElseThrow(() -> new ResourceNotFoundException("User not found: "+ userId));
         return new SignupResponse(user1.getUserId(),user1.getEmail(),user1.getUserName());
     }
 
@@ -54,7 +56,7 @@ public class UserServiceImpl implements IUserService {
     @Override
     public String updateUserById(Long userId, SignupRequest signupRequest) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found: " + userId));
         user.setUserName(signupRequest.getUserName());
         user.setEmail(signupRequest.getEmail());
         user.setPassword(signupRequest.getPassword());
@@ -65,7 +67,7 @@ public class UserServiceImpl implements IUserService {
     @Override
     public String deleteUserById(Long userId) {
         if (!userRepository.existsById(userId)) {
-            throw new RuntimeException("User not found");
+            throw new ResourceNotFoundException("User not found: " + userId);
         }
         userRepository.deleteById(userId);
         return "Deleted" +userId+ "details successfully";
@@ -73,7 +75,7 @@ public class UserServiceImpl implements IUserService {
 
     @Override
     public String assignBooks(Long userId, List<Long> books) {
-            User user1=userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
+            User user1=userRepository.findById(userId).orElseThrow(() -> new ResourceNotFoundException("User not found"+ userId));
         List<Book> books1 = bookRepository.findAllById(books);
         user1.getBooks().addAll(books1);
         userRepository.save(user1);
@@ -85,8 +87,8 @@ public class UserServiceImpl implements IUserService {
 
     @Override
     public String assignBookById(Long userId,Long bookId) {
-        User user1=userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
-        Book book1 =bookRepository.findById(bookId).orElseThrow(()-> new RuntimeException("Book not found"));
+        User user1=userRepository.findById(userId).orElseThrow(() -> new ResourceNotFoundException("User not found: "+ userId));
+        Book book1 =bookRepository.findById(bookId).orElseThrow(()-> new ResourceNotFoundException("Book not found: "+ bookId));
         user1.getBooks().add(book1);
         userRepository.save(user1);
         return "Book Assigned to " +user1.getUserId()+ "(" + user1.getUserName() + "): "+bookId+ "successfully.";
@@ -96,7 +98,7 @@ public class UserServiceImpl implements IUserService {
 
     @Override
     public UserResponse getAssignedBooks(Long userId) {
-        User user1=userRepository.findById(userId).orElseThrow(()-> new RuntimeException("User not found"));
+        User user1=userRepository.findById(userId).orElseThrow(()-> new ResourceNotFoundException("User not found: "+ userId));
         System.out.println(user1);
         return new UserResponse(user1.getUserId(),user1.getUserName(),user1.getEmail(),user1.getBooks().stream().map(book -> {
             BookRequest dto = new BookRequest();
@@ -109,7 +111,7 @@ public class UserServiceImpl implements IUserService {
 
     @Override
     public String updateAssignedBooksById(Long userId ,List<Long> books) {
-        User user1=userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
+        User user1=userRepository.findById(userId).orElseThrow(() -> new ResourceNotFoundException("User not found: "+userId));
         List<Book> books1 = bookRepository.findAllById(books);
         Set<Book> newBooksSet = new HashSet<>(books1);
          user1.setBooks(newBooksSet);
@@ -119,7 +121,7 @@ public class UserServiceImpl implements IUserService {
 
     @Override
     public String deleteAssignedUserBooksById(Long userId) {
-        User user1=userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
+        User user1=userRepository.findById(userId).orElseThrow(() -> new ResourceNotFoundException("User not found: "+userId));
         user1.getBooks().clear();
         userRepository.save(user1);
         return "Deleted User Assigned Books";

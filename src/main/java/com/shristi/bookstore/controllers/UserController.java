@@ -5,6 +5,8 @@ import com.shristi.bookstore.dtos.SignupRequest;
 import com.shristi.bookstore.dtos.UserResponse;
 import com.shristi.bookstore.services.serviceimplementations.UserServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -44,14 +46,12 @@ public class UserController {
 
     @PutMapping("/{userId}")
     public ResponseEntity<String> updateUserById(@PathVariable Long userId, @RequestBody SignupRequest signupRequest) {
-        userService.updateUserById(userId,signupRequest);
-        return ResponseEntity.ok("User Details Updated successfully");
+        return ResponseEntity.ok(userService.updateUserById(userId,signupRequest));
     }
 
     @DeleteMapping("/{userId}")
     public ResponseEntity<String> deleteUserById(@PathVariable Long userId) {
-        userService.deleteUserById(userId);
-        return ResponseEntity.ok("User Deleted successfully");
+        return ResponseEntity.ok(userService.deleteUserById(userId));
     }
 
 

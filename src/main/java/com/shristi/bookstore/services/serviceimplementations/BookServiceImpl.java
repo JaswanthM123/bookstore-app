@@ -5,6 +5,8 @@ import com.shristi.bookstore.dtos.BookRequest;
 import com.shristi.bookstore.dtos.BookResponse;
 import com.shristi.bookstore.dtos.BookUserResponse;
 import com.shristi.bookstore.dtos.SignupResponse;
+import com.shristi.bookstore.exceptions.InvalidRequestException;
+import com.shristi.bookstore.exceptions.ResourceNotFoundException;
 import com.shristi.bookstore.models.Author;
 import com.shristi.bookstore.models.Book;
 import com.shristi.bookstore.repositories.IAuthorRepository;
@@ -25,7 +27,7 @@ public class BookServiceImpl implements IBookService {
     @Override
     public BookResponse addBook(BookRequest bookRequest) {
         if(bookRepository.findByBookTitle(bookRequest.getBookTitle()).isPresent()) {
-            throw new RuntimeException("Book already exists!");
+            throw new InvalidRequestException("Book already exists!: "+bookRequest.getBookTitle());
         }
         Book book1 =new Book();
         book1.setBookTitle(bookRequest.getBookTitle());
@@ -37,7 +39,7 @@ public class BookServiceImpl implements IBookService {
     }
     @Override
     public BookResponse getBookById(Long bookId) {
-        Book book=bookRepository.findById(bookId) .orElseThrow(() -> new RuntimeException("Book not found"));
+        Book book=bookRepository.findById(bookId) .orElseThrow(() -> new ResourceNotFoundException("Book not found: "+bookId));
         return new BookResponse(book.getBookId(),book.getBookDescription(),book.getBookTitle());
     }
     @Override
@@ -50,10 +52,10 @@ public class BookServiceImpl implements IBookService {
     @Override
     public String updateBookById(Long bookId, BookRequest bookRequest) {
         Book book = bookRepository.findById(bookId)
-                .orElseThrow(() -> new RuntimeException("Book not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Book not found: "+bookId));
 
         Author author = authorRepository.findById(bookRequest.getAuthorId())
-                .orElseThrow(() -> new RuntimeException("Author not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Author not found: "+bookRequest.getAuthorId()));
 
         book.setBookTitle(bookRequest.getBookTitle());
         book.setBookDescription(bookRequest.getBookDescription());
@@ -65,16 +67,16 @@ public class BookServiceImpl implements IBookService {
     @Override
     public String deleteBookById(Long bookId) {
         if (!bookRepository.existsById(bookId)) {
-            throw new RuntimeException("Book not found");
+            throw new ResourceNotFoundException("Book not found: "+bookId);
         }
         bookRepository.deleteById(bookId);
-        return "Deleted bookId: " +bookId+ "successfully";
+        return "Deleted bookId: " +bookId+ " details successfully";
     }
 
     @Override
     public BookUserResponse getUsersByBookId(Long bookId) {
         Book book = bookRepository.findById(bookId)
-                .orElseThrow(() -> new RuntimeException("Book not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Book not found: "+bookId));
         System.out.println(book);
         List<SignupResponse> userDetails = book.getUsers().stream()
                 .map(user -> new SignupResponse(
